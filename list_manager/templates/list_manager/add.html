@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+{% load static %}
+{% block content %}
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Add List</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+        <link rel="shortcut icon" type="image/svg" href="{% static 'images/basket.svg' %}"/>
+    </head>
+    <body>
+        <div class="container mt-5">
+            <h1>Add Grocery List</h1>
+            <form id="form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Item name</label>
+                    <input name="item_name" type="text" class="form-control" placeholder="Item name"/>
+                </div>
+                <div class="form-group">
+                    <label>Item quantity</label>
+                    <input name="item_quantity" type="text" class="form-control" placeholder="Item quantity"/>
+                </div>
+                <div class="form-group">
+                    <label>Item status</label>
+                    <select name="item_status" class="form-control">
+                        <option value="PENDING">PENDING</option>
+                        <option value="BOUGHT">BOUGHT</option>
+                        <option value="NOT AVAILABLE">NOT AVAILABLE</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input name="date" type="date" class="form-control" placeholder="Date"/>
+                </div>
+                <div class="form-group">
+                    <input id="form-button" type="submit" value="Add" class="btn btn-danger"/>
+                </div>
+            </form>
+        </div>
+    </body>
+</html>
+<script type="text/javascript">
+    var form = document.getElementById('form')
+	csrftoken = form.getElementsByTagName("input")[0].value
+	console.log("Newtoken:", form.getElementsByTagName("input")[0].value)
+
+	form.addEventListener('submit', function(e){
+		e.preventDefault()
+		console.log('Form submitted')
+		submitFormData()
+	})
+
+	function submitFormData(){
+		console.log('Add button clicked')
+
+		var itemInfo = {
+			'item_name':form.item_name.value,
+			'item_quantity':form.item_quantity.value,
+			'item_status':form.item_status.value,
+			'date':form.date.value,
+		}
+
+		console.log('Item Info:', itemInfo)
+		var url = '/add_item/'
+	    fetch(url,{
+	    	method:'POST',
+	    	headers:{
+	    		'Content-Type':'application/json',
+	    		'X-CSRFToken':csrftoken,
+	    	},
+	    	body:JSON.stringify({'item':itemInfo})
+	    })
+	    .then((response) => response.json())
+	    .then(
+			window.location.href = "{% url 'listview' %}"
+		)
+	}
+
+</script>
+{% endblock %}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+{% load static %}
+{% block content %}
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>View List</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+        <link rel="shortcut icon" type="image/svg" href="{% static 'images/basket.svg' %}"/>
+    </head>
+    <body>
+     {% csrf_token %}
+        <div class="container mt-5">
+            <div class="row mb-3">
+                <div class="col-lg-12 d-flex justify-content-end align-items-center">
+                    <span class="mr-2"><strong>Hi, {{user.username}}</strong></span>
+                    <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+                </div>
+            </div>
+            <!-- top -->
+            <div class="row">
+                <div class="col-lg-6">
+                    <h1>View Grocery List</h1>
+                </div>
+                <div class="col-lg-6 float-right">
+                    <div>
+                        <form method="POST" action="" class="row">
+                            {% csrf_token %}
+                            <div class="col-lg-8 form-group">
+                                <input type="date" name="date" class="form-control">
+                            </div>
+                            <div class="col-lg-4 form-group">
+                                <input class="btn btn-danger form-control" type="submit" value="Filter">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <a href="{% url 'item_form' %}">Add Item</a>
+            </div>
+            <!-- // top -->
+            <!-- Grocery Cards -->
+            <div class="row mt-4">
+                <!--- -->
+                {% for item in items %}
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                          <h5 class="card-title">{{item.item_name}}</h5>
+                          <h6 class="card-subtitle mb-2 text-muted">{{item.item_quantity}}</h6>
+                            {% if item.item_status == 'PENDING' %}
+                          <p class="text-success text-info">{{item.item_status}}</p>
+                            {% elif item.item_status == 'NOT AVAILABLE' %}
+                          <p class="text-success text-danger">{{item.item_status}}</p>
+                            {% elif item.item_status == 'BOUGHT' %}
+                          <p class="text-success text-success">{{item.item_status}}</p>
+                            {% endif %}
+                            <a class="btn btn-outline-secondary add-btn" href="{% url 'update_form' item.id %}">Update</a>
+                            <button data-item="{{item.id}}" data-action="delete" class="btn btn-outline-secondary add-btn delete-list">Delete</button>
+                        </div>
+                      </div>
+                </div>
+                {% endfor %}
+                <!-- // Loop -->
+
+            </div>
+        </div>
+    </body>
+</html>
+<script>
+var updateBtns = document.getElementsByClassName('delete-list')
+var form = document.getElementById('form')
+csrftoken = document.getElementsByTagName("input")[0].value
+console.log(updateBtns.length)
+
+for(var i = 0; i < updateBtns.length; i++){
+    updateBtns[i].addEventListener('click', function(){
+        var item_id = this.dataset.item
+        var action = this.dataset.action
+        console.log('item_id:', item_id, 'action:', action)
+
+        updateUserList(item_id, action)
+    })
+}
+
+form.addEventListener('submit', function(e){
+		e.preventDefault()
+		console.log('Form submitted')
+		var dateInfo = form.date.value
+
+	    console.log('Date Info:', dateInfo)
+	    var url = '/listview/'
+	    fetch(url,{
+	  	    method:'POST',
+	  	    headers:{
+	   		    'Content-Type':'application/json',
+	   		    'X-CSRFToken':csrftoken,
+	   	    },
+	   	body:JSON.stringify({'date':dateInfo})
+	})
+	.then((response) => response.json())
+	.then(
+	)
+	})
+
+function updateUserList(item_id, action){
+    console.log('User is logged in, sending data...')
+
+    var url = '/delete_item/'
+
+    fetch(url, {
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json',
+            'X-CSRFToken':csrftoken,
+        },
+        body:JSON.stringify({'item_id':item_id, 'action':action})
+    })
+
+    .then((response) =>{
+        return response.json()
+    })
+
+    .then(
+        location.reload()
+    )
+}
+</script>
+{% endblock %}
